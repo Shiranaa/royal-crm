@@ -1,37 +1,53 @@
+const mysql = require("mysql2");
+const config = require("../config/dev");
+
 const pool = mysql.createPool({
+  host: config.DB_HOST,
+  user: config.DB_USER,
+  password: config.DB_PASSWORD,
+  database: config.DB_DATABASE,
+  waitForConnections: true,
+  connectionLimit: 5,
+  queueLimit: 0,
 });
 
 module.exports = {
-    // list: [],
+  addCustomer: function (name, phone, email, countryId) {
+    if (!name || name.length === 0) {
+      throw "ERROR: name is empty";
+    }
 
-    addCustomer: function (name, phone, email, countryId) {
-        // const name = process.argv.slice(2);
+    pool.getConnection(function (connErr, connection) {
+      if (connErr) throw connErr; // not connected!
 
-        if (!name || name.length === 0) {
-            throw ('ERROR: name is empty');
+      const sql =
+        "INSERT INTO customers(name, phone, email, country_id)" +
+        " VALUES(?,?,?,?);";
+
+      connection.query(
+        sql,
+        [name, phone, email, countryId],
+        function (sqlErr, result, fields) {
+          if (sqlErr) throw sqlErr;
+
+          console.log(fields);
+          console.log(result);
         }
+      );
+    });
+  },
 
-        // this.list.push({
-        //     name: name,
-        //     id: this.list.length,
-        // });
+  customersList: function (req, res) {
+    pool.getConnection(function (connErr, connection) {
+      if (connErr) throw connErr; // not connected!
 
-        pool.getConnection(function (connErr, connection) {
-            if (connErr) throw connErr; // not connected!
+      const sql = "SELECT * FROM customers";
 
-            // const sql = "INSERT INTO customers(name, phone, email, country_id)" +
-            //     " VALUES('" + name + "','" + phone + "','" + email + "','" + countryId + "');";
+      connection.query(sql, function (sqlErr, result, fields) {
+        if (sqlErr) throw sqlErr;
 
-            const sql = "INSERT INTO customers(name, phone, email, country_id)" +
-                " VALUES(?,?,?,?);";
-
-@@ -48,10 +36,6 @@ module.exports = {
-    },
-
-    customersList: function (req, res) {
-        // this.list.forEach(customer => {
-        //     console.log(`ok. name: ${customer.name} was created.`);
-        // })
-
-        pool.getConnection(function (connErr, connection) {
-            if (connErr) throw connErr; // not connected!
+        res.send(result);
+      });
+    });
+  },
+};
