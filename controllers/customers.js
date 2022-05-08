@@ -26,33 +26,21 @@ module.exports = {
     });
   },
 
-  customersList: function (req, res) {
-    database.pool.getConnection(function (connErr, connection) {
-      if (connErr) throw connErr; // not connected!
-
-      const sql = "SELECT * FROM customers";
-
-      connection.query(
-        sql,
-        [name, phone, email, countryId],
-        function (sqlErr, result, fields) {
-          if (sqlErr) throw sqlErr;
-
-          // console.log(fields);
-          console.log(result);
-        }
-      );
-    });
-  },
-
-  customersList: function (req, res) {
+  customersList: async function (req, res) {
     const sql = "SELECT * FROM customers";
 
-    database
-      .getConnection()
-      .then((connection) => database.runQuery(connection, sql))
-      .then((result) => res.send(result))
-      .catch((err) => console.log(err));
+    try {
+      const connection = await database.getConnection();
+      const result = await database.runQuery(connection, sql);
+      res.send(result);
+    } catch (err) {
+      console.log(err);
+    }
+
+    // database.getConnection()
+    //     .then(connection => database.runQuery(connection, sql))
+    //     .then(result => res.send(result))
+    //     .catch(err => console.log(err));
 
     // database.pool.getConnection(function (connErr, connection) {
     //     if (connErr) throw connErr; // not connected!
