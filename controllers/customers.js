@@ -1,15 +1,25 @@
 const database = require("./database");
+const joi = require("joi");
 
 module.exports = {
   addCustomer: async function (req, res, next) {
-    const qs = req.query;
-    const name = qs.name;
-    const phone = qs.phone;
-    const email = qs.email;
-    const country = qs.country;
+    const reqBody = req.body;
 
-    if (!name || name.length === 0) {
-      throw "ERROR: name is empty";
+    const schema = joi.object({
+      name: joi.string().required().min(2).max(200),
+      phone: joi
+        .string()
+        .required()
+        .regex(/^[0-9]\d{8,11}$/),
+      email: joi.string().required(),
+      countryInputHtml: joi.number().required(),
+    });
+
+    const { error, value } = schema.validate(reqBody);
+
+    if (error) {
+      res.send(`error adding customer: ${error}`);
+      return;
     }
 
     const sql =
@@ -17,11 +27,18 @@ module.exports = {
       " VALUES(?,?,?,?);";
 
     try {
-      const result = await database.query(sql, [name, phone, email, country]); // [rows, fields]
-      res.send(`${name} added successfully`);
+      const result = await database.query(sql, [
+        reqBody.name,
+        reqBody.phone,
+        reqBody.email,
+        reqBody.countryInputHtml,
+      ]);
     } catch (err) {
       console.log(err);
+      return;
     }
+
+    res.send(`${reqBody.name} added successfully`);
   },
 
   customersList: async function (req, res, next) {
