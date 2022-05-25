@@ -1,7 +1,7 @@
-const database = require("./database");
 const joi = require("joi");
 const fs = require("fs");
 const path = require("path");
+const database = require("./database");
 
 module.exports = {
   addCustomer: async function (req, res, next) {
@@ -50,16 +50,13 @@ module.exports = {
       "LEFT JOIN countries cntr ON cust.country_id = cntr.id ORDER BY cust.name ASC;";
 
     try {
-      // const connection = await database.getConnection();
-      const result = await database.query(sql); // [rows, fields]
+      const result = await database.query(sql);
       res.send(result[0]);
     } catch (err) {
       console.log(err);
     }
   },
 
-  // todo: export all customers to file
-  // sql: SELECT
   exportCustomers: async function (req, res, next) {
     const sql =
       "SELECT cust.name, cust.phone, cust.email, " +
@@ -67,11 +64,10 @@ module.exports = {
       "LEFT JOIN countries cntr ON cust.country_id = cntr.id ORDER BY cust.name ASC;";
 
     try {
-      const result = await database.query(sql); // [{rows}, {fields}]
+      const result = await database.query(sql);
 
       const now = new Date().getTime(); // moment.js
       const filePath = path.join(__dirname, "../files", `customers-${now}.txt`);
-      // c:\\projects\royal-crm\files\customers.txt
       const stream = fs.createWriteStream(filePath);
 
       stream.on("open", function () {
@@ -86,10 +82,6 @@ module.exports = {
       throw err;
     }
   },
-
-  // todo: delete customer
-  // sql: DROP
-  deleteCustomer: async function (req, res, next) {},
 
   // todo: sort customers by column
   // sql: SORT BY ASC/DESC
