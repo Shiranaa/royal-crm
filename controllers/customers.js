@@ -1,7 +1,6 @@
 const joi = require("joi");
-const fs = require("fs");
-const path = require("path");
 const database = require("./database");
+const fileMgmt = require("../shared/fileMgmt");
 
 module.exports = {
   addCustomer: async function (req, res, next) {
@@ -47,43 +46,46 @@ module.exports = {
   },
 
   customersList: async function (req, res, next) {
-    const sql =
-      "SELECT cust.id, cust.name, cust.phone, cust.email, " +
-      "cntr.id AS country_id, cntr.name AS country_name, cntr.country_code FROM customers cust " +
-      "LEFT JOIN countries cntr ON cust.country_id = cntr.id ORDER BY cust.name ASC;";
+    const param = req.query; // get method
+    //  const param = req.body;  // post method
+
+    const schema = joi.object({
+      column: joi
+        .string()
+        .valid("name", "email", "country_name")
+        .default("name"),
+      sort: joi.string().valid("ASC", "DESC").default("ASC"),
+    });
+
+    const { error, value } = schema.validate(param);
+
+    const fieldsMap = new Map([
+      ["name", "customer.name"],
+      ["email", "customer.email"],
+      ["country_name", "countries.name"],
+    ]);
+
+    const sql = `SELECT customers.id, customers.name, customers.phone, customers.email,  
+            countries.id AS country_id, countries.name AS country_name, countries.country_code  
+            FROM customers LEFT JOIN countries ON customers.country_id = countries.id 
+            ORDER BY ${fieldsMap.get(value.column)} ${value.sort};`;
 
     try {
       const result = await database.query(sql);
       res.send(result[0]);
     } catch (err) {
       console.log(err);
+      res.send(err);
     }
   },
 
-  exportCustomers: async function (req, res, next) {
+  exportCustomers: function (req, res, next) {
     const sql =
       "SELECT cust.name, cust.phone, cust.email, " +
       "cntr.name AS country_name FROM customers cust " +
       "LEFT JOIN countries cntr ON cust.country_id = cntr.id ORDER BY cust.name ASC;";
 
-    try {
-      const result = await database.query(sql);
-
-      const now = new Date().getTime(); // moment.js
-      const filePath = path.join(__dirname, "../files", `customers-${now}.txt`);
-      const stream = fs.createWriteStream(filePath);
-
-      stream.on("open", function () {
-        stream.write(JSON.stringify(result[0]));
-        stream.end();
-      });
-
-      stream.on("finish", function () {
-        res.send(`Success. File at: ${filePath}`);
-      });
-    } catch (err) {
-      throw err;
-    }
+    fileMgmt.exportToFile(res, sql, "customers");
   },
 
   // todo: sort customers by column
