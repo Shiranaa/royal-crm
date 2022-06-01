@@ -8,12 +8,12 @@ module.exports = {
   login: async function (req, res, next) {
     const reqBody = req.body;
 
-    const sechema = joi.object({
+    const schema = joi.object({
       email: joi.string().required().min(6).max(255).email(),
       password: joi.string().required().min(6),
     });
 
-    const { error, value } = sechema.validate(reqBody);
+    const { error, value } = schema.validate(reqBody);
 
     if (error) {
       console.log(error.details[0].message);
@@ -26,8 +26,6 @@ module.exports = {
     try {
       const result = await database.query(sql, [reqBody.email]);
       const rows = result[0];
-      // $2b$10$nOpWM1slxvsqdsHhW4VRkeY8fDsndvrf8aKHAwNdpgf
-      // 123456
       const validPassword = await bcrypt.compare(
         reqBody.password,
         rows[0].password_hash
