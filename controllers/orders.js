@@ -1,6 +1,6 @@
 const database = require("./database");
 const joi = require("joi");
-const fileMgmt = require("../shared/fileMgmt");
+const fileMgmt = require("../shared/fileMget");
 
 module.exports = {
   //  addOrder: function() {

@@ -1,7 +1,7 @@
 const express = require("express");
 const router = express.Router();
 const pm = require("../controllers/products");
-const fileMgmt = require("../shared/fileMgmt");
+const fileMgmt = require("../shared/fileMget");
 
 // http://localhost:300/products
 
