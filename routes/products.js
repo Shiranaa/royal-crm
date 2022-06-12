@@ -1,7 +1,7 @@
 const express = require("express");
 const router = express.Router();
 const pm = require("../controllers/products");
-const fileMgmt = require("../shared/fileMget");
+const fileMgmt = require("../shared/fileMgmt");
 
 // http://localhost:300/products
 
@@ -13,8 +13,8 @@ router.get("/home", function (req, res, next) {
 router.get("/", pm.productsList);
 router.post("/", pm.addProduct);
 router.get("/export", pm.exportProducts);
-// router.patch('/products', pm.editProduct);
-// router.delete('/', pm.deleteProduct);
+router.put("/:id", pm.editProduct);
+router.delete("/:id", pm.deleteProduct);
 // router.get('/search/:id', pm.searchProducts);
 
 module.exports = router;
