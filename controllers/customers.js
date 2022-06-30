@@ -16,7 +16,7 @@ module.exports = {
         .string()
         .required()
         .regex(/^[^@]+@[^@]+$/),
-      countryInputHtml: joi.number().required(),
+      countryId: joi.number().required(),
     });
 
     const { error, value } = schema.validate(reqBody);
@@ -35,7 +35,7 @@ module.exports = {
         reqBody.name,
         reqBody.phone,
         reqBody.email,
-        reqBody.countryInputHtml,
+        reqBody.countryId,
       ]);
     } catch (err) {
       console.log(err);
@@ -59,6 +59,12 @@ module.exports = {
 
     const { error, value } = schema.validate(param);
 
+    if (error) {
+      console.log(error);
+      res.status(400).send("add failed");
+      return;
+    }
+
     const fieldsMap = new Map([
       ["name", "customers.name"],
       ["email", "customers.email"],
@@ -72,10 +78,11 @@ module.exports = {
 
     try {
       const result = await database.query(sql);
-      res.send(result[0]);
+      res.set("Access-Control-Allow-Origin", "*");
+      res.json(result[0]);
     } catch (err) {
       console.log(err);
-      res.send(err);
+      res.json(err);
     }
   },
 
@@ -133,7 +140,8 @@ module.exports = {
         searchQuery,
       ]);
 
-      res.send(result[0]);
+      res.set("Access-Control-Allow-Origin", "*");
+      res.json(result[0]);
     } catch (err) {
       res.status(400).send(`search error: ${err}`);
       throw error;
