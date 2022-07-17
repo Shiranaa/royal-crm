@@ -1,12 +1,13 @@
 import { Component, NgModule, OnInit } from '@angular/core';
+import { FormControl, FormGroup, Validators } from '@angular/forms';
 import { environment } from 'src/environments/environment';
 import { ApiService } from '../core/api.service';
 import {
+  Country,
   Customer,
   CustomerSort,
   FilePath,
   sortColumn,
-  sortDirection,
 } from '../shared/types';
 
 @Component({
@@ -16,19 +17,56 @@ import {
 })
 export class CustomersComponent implements OnInit {
   customers!: Array<Customer>;
+  countries!: Array<Country>;
   searchFieldValue!: string;
   searchTerm!: string;
   tableSort!: CustomerSort;
+  showForm = false;
+
+  customerForm = new FormGroup({
+    name: new FormControl('', {
+      validators: Validators.required,
+    }),
+    email: new FormControl('', {
+      validators: [Validators.required, Validators.email],
+    }),
+    phone: new FormControl('', {
+      validators: Validators.required,
+    }),
+    country_id: new FormControl(0, {
+      validators: Validators.required,
+    }),
+  });
+
+  onSumbit() {
+    if (!this.customerForm.valid) {
+      return;
+    }
+
+    this.apiService.addCustomer(this.customerForm.value).subscribe({
+      next: (data: Customer) => {
+        //todo: check data in response
+        this.getCustomers();
+        this.showForm = false;
+        this.customerForm.reset();
+      },
+      error: (err) => console.error(err),
+    });
+  }
+
+  toggleForm() {
+    this.showForm = !this.showForm;
+  }
 
   constructor(private apiService: ApiService) {}
 
   ngOnInit(): void {
+    this.getCountries();
     this.getCustomers();
 
     this.tableSort = {
-      name: 'ASC',
-      email: 'Default',
-      country_name: 'Default',
+      column: 'name',
+      dirAsc: true,
     };
   }
 
@@ -39,6 +77,15 @@ export class CustomersComponent implements OnInit {
       },
       error: (err) => console.error(err),
       // complete: () => console.log(`complete`)
+    });
+  }
+
+  getCountries() {
+    this.apiService.getCountries().subscribe({
+      next: (data: Array<Country>) => {
+        this.countries = data;
+      },
+      error: (err) => console.error(err),
     });
   }
 
@@ -74,14 +121,14 @@ export class CustomersComponent implements OnInit {
   }
 
   sortCustomers(column: sortColumn) {
-    let direction: sortDirection = this.tableSort[column];
-    if (direction === 'Default' || direction === 'DESC') {
-      direction = 'ASC';
-    } else if (direction === 'ASC') {
-      direction = 'DESC';
+    if (this.tableSort.column === column) {
+      this.tableSort.dirAsc = !this.tableSort.dirAsc;
+    } else {
+      this.tableSort.column = column;
+      this.tableSort.dirAsc = true;
     }
 
-    this.tableSort[column] = direction;
+    const direction = this.tableSort.dirAsc ? 'ASC' : 'DESC';
 
     this.apiService.getSortedCustomers(column, direction).subscribe({
       next: (data: Array<Customer>) => {
@@ -92,19 +139,9 @@ export class CustomersComponent implements OnInit {
   }
 
   displaySort(column: sortColumn): string {
-    const direction: sortDirection = this.tableSort[column];
-
-    // this.tableSort.name = 'Default';
-    // this.tableSort.email = 'Default';
-    // this.tableSort.country_name = 'Default';
-
-    switch (direction) {
-      case 'ASC':
-        return 'A';
-      case 'DESC':
-        return 'D';
-      default:
-        return '-';
+    if (this.tableSort.column === column) {
+      return this.tableSort.dirAsc ? 'bi-chevron-up' : 'bi-chevron-down';
     }
+    return 'bi-chevron-expand';
   }
 }

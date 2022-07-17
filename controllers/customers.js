@@ -16,7 +16,7 @@ module.exports = {
         .string()
         .required()
         .regex(/^[^@]+@[^@]+$/),
-      countryId: joi.number().required(),
+      country_id: joi.number().required(),
     });
 
     const { error, value } = schema.validate(reqBody);
@@ -32,22 +32,22 @@ module.exports = {
 
     try {
       const result = await database.query(sql, [
-        reqBody.name,
-        reqBody.phone,
-        reqBody.email,
-        reqBody.countryId,
+        value.name,
+        value.phone,
+        value.email,
+        value.country_id,
       ]);
+
+      value.id = result[0].insertId;
+      res.json(value);
     } catch (err) {
       console.log(err);
       return;
     }
-
-    res.send(`${reqBody.name} added successfully`);
   },
 
   customersList: async function (req, res, next) {
-    const param = req.query; // get method
-    //  const param = req.body;  // post method
+    const param = req.query;
 
     const schema = joi.object({
       column: joi
@@ -78,7 +78,6 @@ module.exports = {
 
     try {
       const result = await database.query(sql);
-      res.set("Access-Control-Allow-Origin", "*");
       res.json(result[0]);
     } catch (err) {
       console.log(err);
@@ -95,23 +94,7 @@ module.exports = {
     fileMgmt.exportToFile(res, sql, "customers");
   },
 
-  // todo: search in customers by parameter (name,email,country)
-  // sql: SELECT WHERE
   findCustomer: async function (req, res, next) {
-    /*
-        1. [V] client send request using html form
-        2. the request is being send to a router 
-            -[V] router maps the request to a function (controller),
-            -[V] router uses READ -> GET API
-        3. controller function:
-            -[V] req.query -> parameters in the request from client
-            -[V] use joi to validate req.query param (string, required, min 2 characters)
-            -[V] error or success => manage error
-            -[V] if success => add parameters into query
-            -[V] send query to database and get results
-            -[V] return response to client, display to user
-        */
-
     const param = req.query;
 
     const schema = joi.object({
@@ -140,7 +123,6 @@ module.exports = {
         searchQuery,
       ]);
 
-      res.set("Access-Control-Allow-Origin", "*");
       res.json(result[0]);
     } catch (err) {
       res.status(400).send(`search error: ${err}`);
