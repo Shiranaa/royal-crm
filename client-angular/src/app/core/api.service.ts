@@ -7,13 +7,21 @@ import {
   Country,
   Customer,
   FilePath,
+  Login,
   Product,
+  User,
 } from '../shared/types';
 
 @Injectable({
   providedIn: 'root',
 })
 export class ApiService {
+  private token = '';
+
+  setToken(value: string) {
+    this.token = value;
+  }
+
   constructor(private http: HttpClient) {}
 
   getCustomersList(): Observable<Array<Customer>> {
@@ -53,5 +61,15 @@ export class ApiService {
 
   getProductsList(): Observable<Array<Product>> {
     return this.http.get<Array<Product>>(`${environment.serverUrl}/products`);
+  }
+
+  exportProducts(): Observable<FilePath> {
+    return this.http.get<FilePath>(`${environment.serverUrl}/products/export`);
+  }
+
+  login(details: Login): Observable<User> {
+    return this.http.post<User>(`${environment.serverUrl}/login`, details, {
+      headers: { 'Content-Type': 'application/json' },
+    });
   }
 }

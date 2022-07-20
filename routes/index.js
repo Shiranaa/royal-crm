@@ -5,6 +5,10 @@ const auth = require("../controllers/auth");
 const fileMgmt = require("../shared/fileMgmt");
 
 /* authentication */
+router.options("*", function (req, res, next) {
+  res.send();
+});
+
 router.get("/signin", function (req, res, next) {
   const filePath = fileMgmt.getHtmlFilePath("login.html");
   res.sendFile(filePath);

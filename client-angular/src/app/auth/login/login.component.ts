@@ -6,6 +6,7 @@ import {
   ViewChild,
 } from '@angular/core';
 import { FormControl, FormGroup, Validators } from '@angular/forms';
+import { AuthService } from 'src/app/core/auth.service';
 
 @Component({
   selector: 'app-login',
@@ -24,7 +25,7 @@ export class LoginComponent implements OnInit, AfterViewInit {
     }),
   });
 
-  constructor() {}
+  constructor(private authService: AuthService) {}
 
   ngOnInit(): void {}
 
@@ -32,8 +33,16 @@ export class LoginComponent implements OnInit, AfterViewInit {
     this.emailField.nativeElement.focus();
   }
 
-  onSumbit() {
-    console.log(this.loginForm.value);
-    console.log(this.loginForm.valid);
+  onSubmit() {
+    // console.log(this.loginForm.value);
+    // console.log(this.loginForm.valid);
+
+    if (!this.loginForm.valid) {
+      return;
+    }
+
+    this.authService.login(this.loginForm.value).subscribe({
+      error: (err) => console.error(err),
+    });
   }
 }

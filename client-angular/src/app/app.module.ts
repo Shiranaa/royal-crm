@@ -12,16 +12,31 @@ import { ProductsModule } from './products/products.module';
 import { SharedModule } from './shared/shared.module';
 import { CoreComponent } from './core/core.component';
 import { TopnavComponent } from './components/topnav/topnav.component';
-import { CustomerComponent } from './customer/customer.component';
+import { CustomersComponent } from './customer/customer.component';
 import { HomeComponent } from './home/home.component';
 import { OrdersComponent } from './orders/orders.component';
 import { ProductsComponent } from './products/products.component';
 import { ButtonComponent } from './button/button.component';
 import { FooterComponent } from './footer/footer.component';
 import { HeaderComponent } from './header/header.component';
+import { ExportComponent } from './export/export.component';
+import { PageTitleComponent } from './page-title/page-title.component';
 
 @NgModule({
-  declarations: [AppComponent, CoreComponent, TopnavComponent, CustomerComponent, HomeComponent, OrdersComponent, ProductsComponent, ButtonComponent, FooterComponent, HeaderComponent],
+  declarations: [
+    AppComponent,
+    CoreComponent,
+    TopnavComponent,
+    CustomerComponent,
+    HomeComponent,
+    OrdersComponent,
+    ProductsComponent,
+    ButtonComponent,
+    FooterComponent,
+    HeaderComponent,
+    ExportComponent,
+    PageTitleComponent,
+  ],
   imports: [
     BrowserModule,
     SharedModule,
